@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <title>Credits</title>
+        <link type="text/css" rel="stylesheet" href="global.css" />
+        <script type="text/javascript" src="page.js"></script>
+        <style type="text/css">
+            * {
+                margin: 0px;
+                padding: 0px;
+                overflow: hidden;
+                text-align: center;
+                vertical-align: middle;
+                font-family: 'Trebuchet MS';
+                color: white;
+            }
+
+            iframe#browser {
+                position: absolute;
+                top: 96px;
+                height: 384px;
+                left: 32px;
+                width: 704px;
+                border: solid 1px;
+            }
+
+            div.button a {
+                display: block;
+                position: absolute;
+                width: 92px;
+                height: 28px;
+            }
+
+            div.button#back a {
+                top: 514px;
+                left: 338px;
+                background-color: #1F1F1F;
+            }
+            div.button#back a:hover { background-color: #2F2F2F; }
+            div.button#back a:active { background-color: #0F0F0F; }
+        </style>
+    </head>
+    <body>
+        <div id="page">
+            <div class="button" id="back" onclick=""><a href="..\mainmenu\page.html"></a></div>
+            <iframe id="browser" src="http://mmorpgmaker.org/"></iframe>
+        </div>
+    </body>
+</html>

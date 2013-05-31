@@ -1,0 +1,191 @@
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Storage;
+using Microsoft.Xna.Framework.GamerServices;
+using Awesomium.Core;
+using System.IO;
+using System.Threading;
+
+namespace Mirage.Client {
+    public enum GameState : short {
+        MainMenu = 0,
+        Credits,
+        Login,
+        Register,
+        Ingame,
+        Logos,
+
+        StateCount
+    }
+
+    public class GameCore : Game {
+        GraphicsDeviceManager graphics;
+        SpriteBatch spriteBatch;
+        Texture2D interfaceTexture;
+        byte[] interfaceTextureBytes;
+        WebView webView;
+        MouseState pmstate;
+        KeyboardState pkstate;
+        GameState state;
+
+        public GameCore() : base() {
+            graphics = new GraphicsDeviceManager(this);
+            graphics.PreferredBackBufferWidth = 768;
+            graphics.PreferredBackBufferHeight = 576;
+
+            Content.RootDirectory = "Content";
+#if DEBUG
+            graphics.SynchronizeWithVerticalRetrace = false;
+
+            IsFixedTimeStep = false;
+#endif      
+        }
+        
+        protected override void Initialize() {
+            // TODO: Add your initialization logic here
+            webView = WebCore.CreateWebView(768, 576, WebViewType.Offscreen);
+            
+            pkstate = Keyboard.GetState();
+            pmstate = Mouse.GetState();
+
+            base.Initialize();
+        }
+
+        protected override void LoadContent() {
+            // Create a new SpriteBatch, which can be used to draw textures.
+            spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            interfaceTexture = new Texture2D(GraphicsDevice, graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight, false, SurfaceFormat.Color);
+            interfaceTextureBytes = new byte[4 * graphics.PreferredBackBufferWidth * graphics.PreferredBackBufferHeight];
+
+            GoState(GameState.Credits);
+        }
+
+        protected override void UnloadContent() {
+            WebCore.Shutdown();
+        }
+
+        protected virtual void GoState(GameState nextState) {
+            JSValue value;
+            JSObject objGameCore;
+
+            switch (nextState) {
+                case GameState.MainMenu:
+                    LoadPage("mainmenu");
+
+                    value = webView.CreateGlobalJavascriptObject("gameCore");
+                    objGameCore = (JSObject)value;
+
+                    objGameCore.Bind("exit", false,
+                        new JavascriptMethodEventHandler(
+                            (object sender, JavascriptMethodEventArgs args) => {
+                                Exit();
+                            }
+                        )
+                    );
+
+                    objGameCore.Bind("goCredits", false,
+                        new JavascriptMethodEventHandler(
+                            (object sender, JavascriptMethodEventArgs args) => {
+                                GoState(GameState.Credits);
+                            }
+                        )
+                    );
+                    break;
+                case GameState.Credits:
+                    LoadPage("credits");
+                    value = webView.CreateGlobalJavascriptObject("gameCore");
+                    objGameCore = (JSObject)value;
+
+                    objGameCore.Bind("goBack", false,
+                        new JavascriptMethodEventHandler(
+                            (object sender, JavascriptMethodEventArgs args) => {
+                                GoState(GameState.MainMenu);
+                            }
+                        )
+                    );
+                    break;
+                default:
+                    return;
+            }
+
+            state = nextState;
+        }
+
+        protected virtual bool LoadPage(string page) {
+            try {
+                webView.Source = new Uri("file://" + Environment.CurrentDirectory + "/Content/ui/" + page + "/page.html");
+                
+                webView.FocusView();
+                while (webView.IsLoading) {
+                    if (webView.GetLastError() != Error.None) {
+                        Error err = webView.GetLastError();
+                        Console.WriteLine(err);
+                    }
+                    WebCore.Update();
+                }
+            } catch (Exception e) {
+                return false;
+            }
+
+            webView.IsTransparent = true;
+            return true;
+        }
+
+        private bool MousePressed(MouseState previous, MouseState current) {
+            return (current.LeftButton == ButtonState.Pressed);
+        }
+
+        private bool MouseReleased(MouseState previous, MouseState current) {
+            return (current.LeftButton == ButtonState.Released);
+        }
+
+        protected override void Update(GameTime gameTime) {
+            KeyboardState kstate = Keyboard.GetState();
+            MouseState mstate = Mouse.GetState();
+
+            WebCore.Update();
+
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape)) Exit();
+            if (kstate.IsKeyDown(Keys.Escape)) Exit();
+
+            if (MousePressed(pmstate, mstate)) {
+                webView.InjectMouseDown(MouseButton.Left);
+            } else {
+                webView.InjectMouseUp(MouseButton.Left);
+            }
+
+            webView.InjectMouseMove(mstate.X, mstate.Y);
+
+            webView.InjectMouseWheel(mstate.ScrollWheelValue - pmstate.ScrollWheelValue, 0);
+            
+            base.Update(gameTime);
+
+            pkstate = kstate;
+            pmstate = mstate;
+        }
+
+        protected override void Draw(GameTime gameTime) {
+            GraphicsDevice.Clear(Color.CornflowerBlue);
+            spriteBatch.Begin();
+
+            BitmapSurface surface = webView.Surface as BitmapSurface;
+
+            unsafe {
+                fixed (byte* ptr = interfaceTextureBytes) {
+                    surface.CopyTo((IntPtr)ptr, surface.Width * 4, 4, true, false);
+                }
+            }
+            interfaceTexture.SetData(interfaceTextureBytes);
+
+            spriteBatch.Draw(interfaceTexture, Vector2.Zero, Color.White);
+
+            spriteBatch.End();
+            base.Draw(gameTime);
+        }
+    }
+}

@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <title>Main Menu</title>
+        <link type="text/css" rel="stylesheet" href="global.css" />
+        <script type="text/javascript" src="page.js"></script>
+        <style type="text/css">
+            * {
+                margin: 0px;
+                padding: 0px;
+                overflow: hidden;
+                text-align: center;
+                vertical-align: middle;
+                font-family: 'Trebuchet MS';
+                color: white;
+            }
+
+            iframe#browser {
+                position: absolute;
+                top: 96px;
+                height: 384px;
+                left: 32px;
+                width: 704px;
+                border: solid 1px;
+            }
+
+            div.button a {
+                display: block;
+                position: absolute;
+                width: 92px;
+                height: 28px;
+            }
+
+            div.button#login a {
+                top: 514px;
+                left: 134px;
+                background-image: url('resources/login_norm.jpg');
+            }
+            div.button#login a:hover { background-image: url('resources/login_hover.jpg'); }
+            div.button#login a:active { background-image: url('resources/login_click.jpg'); }
+
+            div.button#register a {
+                top: 514px;
+                left: 271px;
+                background-image: url('resources/register_norm.jpg');
+            }
+            div.button#register a:hover { background-image: url('resources/register_hover.jpg'); }
+            div.button#register a:active { background-image: url('resources/register_click.jpg'); }
+
+            div.button#credits a {
+                top: 514px;
+                left: 408px;
+                background-image: url('resources/credits_norm.jpg');
+            }
+            div.button#credits a:hover { background-image: url('resources/credits_hover.jpg'); }
+            div.button#credits a:active { background-image: url('resources/credits_click.jpg'); }
+
+            div.button#exit a {
+                top: 514px;
+                left: 545px;
+                background-image: url('resources/exit_norm.jpg');
+            }
+            div.button#exit a:hover { background-image: url('resources/exit_hover.jpg'); }
+            div.button#exit a:active { background-image: url('resources/exit_click.jpg'); }
+        </style>
+    </head>
+    <body>
+        <div id="page">
+            <div class="button" id="login" onclick="gameCore.goLogin()"><a></a></div>
+            <div class="button" id="register" onclick="gameCore.goRegister()"><a></a></div>
+            <div class="button" id="credits" onclick="gameCore.goCredits()"><a></a></div>
+            <div class="button" id="exit" onclick="gameCore.exit()"><a></a></div>
+            <iframe id="browser" src="http://mmorpgmaker.org/"></iframe>
+        </div>
+    </body>
+</html>
