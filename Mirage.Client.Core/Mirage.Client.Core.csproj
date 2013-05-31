@@ -41,6 +41,9 @@
   <ItemGroup>
     <Compile Include="Input\InputManager.cs" />
     <Compile Include="Interface\Component.cs" />
+    <Compile Include="Interface\Controls\Textbox.cs" />
+    <Compile Include="Interface\Controls\TextComponent.cs" />
+    <Compile Include="Interface\Controls\TextRegion.cs" />
     <Compile Include="Interface\Events\EventArgs.cs" />
     <Compile Include="Interface\Events\EventDelegates.cs" />
     <Compile Include="Interface\InterfaceManager.cs" />

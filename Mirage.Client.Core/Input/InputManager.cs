@@ -4,23 +4,45 @@ using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 
 namespace Mirage.Client.Core {
-    internal class InputState {
+    /// <summary>
+    /// 
+    /// </summary>
+    public sealed class InputState {
         private KeyboardState keyboard;
-        public KeyboardState Keyboard { get { return keyboard; } }
-
         private MouseState mouse;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public KeyboardState Keyboard { get { return keyboard; } }
+        
+        /// <summary>
+        /// 
+        /// </summary>
         public MouseState Mouse { get { return mouse; } }
 
+        /// <summary>
+        /// Private constructor for the InputState.
+        /// </summary>
+        /// <param name="keyboard">Keyboard state</param>
+        /// <param name="mouse">Mouse state</param>
         private InputState(KeyboardState keyboard, MouseState mouse) {
             this.keyboard = keyboard;
             this.mouse = mouse;
         }
 
+        /// <summary>
+        /// Creates an instance of the current input state.
+        /// </summary>
+        /// <returns>An instance of the current input state</returns>
         public static InputState GetCurrentState() {
             return new InputState(Microsoft.Xna.Framework.Input.Keyboard.GetState(), Microsoft.Xna.Framework.Input.Mouse.GetState());
         }
     }
 
+    /// <summary>
+    /// Enumeration for Mouse Buttons.
+    /// </summary>
     public enum MouseButton {
         Primary,
         Secondary,
@@ -29,6 +51,9 @@ namespace Mirage.Client.Core {
         XButton2,
     }
 
+    /// <summary>
+    /// Handles and manages input from MonoGame.
+    /// </summary>
     public sealed class InputManager {
         private InputState previousInput;
         private InputState currentInput;
@@ -36,32 +61,95 @@ namespace Mirage.Client.Core {
         private Dictionary<Keys, TimeSpan> nextTextInput;
         private bool capsLock;
 
+        /// <summary>
+        /// Flag for whether a Shift key is pressed.
+        /// </summary>
         public bool Shift { get { return KeyDown(Keys.LeftShift) || KeyDown(Keys.RightShift); } }
+        
+        /// <summary>
+        /// Flag for whether an Alt key is pressed.
+        /// </summary>
         public bool Alt { get { return KeyDown(Keys.LeftAlt) || KeyDown(Keys.RightAlt); } }
+
+        /// <summary>
+        /// Flag for whether a Control key is pressed.
+        /// </summary>
         public bool Control { get { return KeyDown(Keys.LeftControl) || KeyDown(Keys.RightControl); } }
+
+        /// <summary>
+        /// Flag for Caps Lock status. Operating system independent, when the program starts caps lock is assumed to be off.
+        /// </summary>
         public bool CapsLock { get { return capsLock; } }
+
+        /// <summary>
+        /// Switches the primary and secondary (left and right) mouse buttons.
+        /// </summary>
+        /// <remarks>
+        /// The operating system or MonoGame (at least on Windows) already switches the two if the buttons
+        /// are switched through the OS mouse settings, and if LeftyMode is on, it will switch them again.
+        /// </remarks>
         public bool LeftyMode { get; set; }
+
+        /// <summary>
+        /// Controls whether the user can hold down a key to repeat strokes, or whether they must manually tap the key.
+        /// </summary>
         public bool EnableKeyRepeat { get; set; }
+
+        /// <summary>
+        /// The interval between each key repeat.
+        /// </summary>
         public TimeSpan RepeatInterval { get; set; }
+
+        /// <summary>
+        /// The delay before the key repeat feature starts taking input.
+        /// </summary>
         public TimeSpan RepeatDelay { get; set; }
+
+        /// <summary>
+        /// The current location of the mouse cursor.
+        /// </summary>
         public Point Cursor { get { return new Point(currentInput.Mouse.X, currentInput.Mouse.Y); } }
 
+        /// <summary>
+        /// Constructs a basic instance of the InputManager.
+        /// Key repeat and lefty mode are both OFF.
+        /// </summary>
         public InputManager()
             : this(false, false) {
         }
 
+        /// <summary>
+        /// Constructs an instance of the InputManager with the specified option(s).
+        /// </summary>
+        /// <param name="keyRepeat">Whether key repeat should be enabled</param>
         public InputManager(bool keyRepeat)
             : this(keyRepeat, false) {
         }
 
+        /// <summary>
+        /// Constructs an instance of the InputManager with the specified option(s).
+        /// </summary>
+        /// <param name="keyRepeat">Whether key repeat should be enabled</param>
+        /// <param name="lefty">Whether lefty mode should be enabled</param>
         public InputManager(bool keyRepeat, bool lefty)
             : this(keyRepeat, new TimeSpan(84 * TimeSpan.TicksPerMillisecond), lefty) {
         }
 
+        /// <summary>
+        /// Constructs an instance of the InputManager with the specified option(s).
+        /// </summary>
+        /// <param name="keyRepeat">Whether key repeat should be enabled</param>
+        /// <param name="keyRepeatInterval">The time interval between key repeats</param>
         public InputManager(bool keyRepeat, TimeSpan keyRepeatInterval)
             : this(keyRepeat, keyRepeatInterval, false) {
         }
 
+        /// <summary>
+        /// Constructs an instance of the InputManager with the specified option(s).
+        /// </summary>
+        /// <param name="keyRepeat">Whether key repeat should be enabled</param>
+        /// <param name="keyRepeatInterval">The time interval between key repeats</param>
+        /// <param name="lefty">Whether lefty mode should be enabled</param>
         public InputManager(bool keyRepeat, TimeSpan keyRepeatInterval, bool lefty) {
             currentInput = previousInput = InputState.GetCurrentState();
             nextTextInput = new Dictionary<Keys, TimeSpan>();
@@ -71,6 +159,10 @@ namespace Mirage.Client.Core {
             LeftyMode = lefty;
         }
 
+        /// <summary>
+        /// Updates the state of the InputManager.
+        /// </summary>
+        /// <param name="time">The time of this update</param>
         public void Update(GameTime time) {
             previousInput = currentInput;
             currentInput = InputState.GetCurrentState();
@@ -85,11 +177,24 @@ namespace Mirage.Client.Core {
                 capsLock = !capsLock;
         }
 
+        /// <summary>
+        /// Gets the input with the option to specify the current input and the length limit of the return string.
+        /// </summary>
+        /// <param name="current">The current input</param>
+        /// <param name="lengthLimit">The length limit of the text input</param>
+        /// <returns>The processed text input</returns>
         public string GetTextInput(string current = "", int lengthLimit = 0) {
             int position = -1;
             return GetTextInput(current, lengthLimit, ref position);
         }
 
+        /// <summary>
+        /// Gets the input with the specified current input, length limit and a reference to the cursor position.
+        /// </summary>
+        /// <param name="current">The current input</param>
+        /// <param name="lengthLimit">The length limit of the text input</param>
+        /// <param name="currentPosition">The current cursor position</param>
+        /// <returns>The processed text input</returns>
         public string GetTextInput(string current, int lengthLimit, ref int currentPosition) {
             bool shifted = capsLock ? !(KeyDown(Keys.LeftShift) || KeyDown(Keys.RightShift)) : (KeyDown(Keys.LeftShift) || KeyDown(Keys.RightShift));
             string input = (current == null) ? "" : current;
@@ -156,42 +261,88 @@ namespace Mirage.Client.Core {
             return input;
         }
 
+        /// <summary>
+        /// Determines whether the specified key is being held down
+        /// </summary>
+        /// <param name="key">The key to get the state of</param>
+        /// <returns>Key held flag</returns>
         public bool KeyHeld(Keys key) {
             return currentInput.Keyboard.IsKeyDown(key) && previousInput.Keyboard.IsKeyDown(key);
         }
 
+        /// <summary>
+        /// Determines whether the specified key was just pressed
+        /// </summary>
+        /// <param name="key">The key to get the state of</param>
+        /// <returns>Key pressed flag</returns>
         public bool KeyPressed(Keys key) {
             return currentInput.Keyboard.IsKeyDown(key) && previousInput.Keyboard.IsKeyUp(key);
         }
 
+        /// <summary>
+        /// Determines whether the specified key was just released
+        /// </summary>
+        /// <param name="key">The key to get the state of</param>
+        /// <returns>Key released flag</returns>
         public bool KeyReleased(Keys key) {
             return currentInput.Keyboard.IsKeyUp(key) && previousInput.Keyboard.IsKeyDown(key);
         }
 
+        /// <summary>
+        /// Determines whether the specified key is down
+        /// </summary>
+        /// <param name="key">The key to get the state of</param>
+        /// <returns>Key down flag</returns>
         public bool KeyDown(Keys key) {
             return currentInput.Keyboard.IsKeyDown(key);
         }
 
+        /// <summary>
+        /// Determines whether the specified key is up
+        /// </summary>
+        /// <param name="key">The key to get the state of</param>
+        /// <returns>Key up flag</returns>
         public bool KeyUp(Keys key) {
             return currentInput.Keyboard.IsKeyUp(key);
         }
 
+        /// <summary>
+        /// Determines whether the mouse was just moved
+        /// </summary>
+        /// <returns>Movement flag</returns>
         public bool MouseMoved() {
             return (previousInput.Mouse.X != currentInput.Mouse.X) || (previousInput.Mouse.Y != currentInput.Mouse.Y);
         }
 
+        /// <summary>
+        /// Determines whether the mouse was just scrolled
+        /// </summary>
+        /// <returns>Scroll flag</returns>
         public bool MouseScrolled() {
             return (previousInput.Mouse.ScrollWheelValue != currentInput.Mouse.ScrollWheelValue);
         }
 
+        /// <summary>
+        /// Gets the current mouse scroll position
+        /// </summary>
+        /// <returns>Mouse scroll position</returns>
         public int MouseScrollPosition() {
             return currentInput.Mouse.ScrollWheelValue;
         }
 
+        /// <summary>
+        /// Gets the current mouse scroll delta
+        /// </summary>
+        /// <returns>Mouse scroll delta</returns>
         public int MouseScrollDelta() {
             return (currentInput.Mouse.ScrollWheelValue - previousInput.Mouse.ScrollWheelValue);
         }
 
+        /// <summary>
+        /// Determines whether the specified mouse button is being held down
+        /// </summary>
+        /// <param name="button">The button to get the state of</param>
+        /// <returns>Button held flag</returns>
         public bool MouseHeld(MouseButton button) {
             switch (button) {
                 case MouseButton.Primary:
@@ -209,6 +360,11 @@ namespace Mirage.Client.Core {
             return false;
         }
 
+        /// <summary>
+        /// Determines whether the specified mouse button was just pressed
+        /// </summary>
+        /// <param name="button">The button to get the state of</param>
+        /// <returns>Button pressed flag</returns>
         public bool MousePressed(MouseButton button) {
             switch (button) {
                 case MouseButton.Primary:
@@ -226,6 +382,11 @@ namespace Mirage.Client.Core {
             return false;
         }
 
+        /// <summary>
+        /// Determines whether the specified mouse button was just released
+        /// </summary>
+        /// <param name="button">The button to get the state of</param>
+        /// <returns>Button released flag</returns>
         public bool MouseReleased(MouseButton button) {
             switch (button) {
                 case MouseButton.Primary:
@@ -243,6 +404,11 @@ namespace Mirage.Client.Core {
             return false;
         }
 
+        /// <summary>
+        /// Determines whether the specified mouse button is down
+        /// </summary>
+        /// <param name="button">The button to get the state of</param>
+        /// <returns>Button down flag</returns>
         public bool MouseDown(MouseButton button) {
             switch (button) {
                 case MouseButton.Primary:
@@ -260,6 +426,11 @@ namespace Mirage.Client.Core {
             return false;
         }
 
+        /// <summary>
+        /// Determines whether the specified mouse button is up
+        /// </summary>
+        /// <param name="button">The button to get the state of</param>
+        /// <returns>Button up flag</returns>
         public bool MouseUp(MouseButton button) {
             switch (button) {
                 case MouseButton.Primary:
