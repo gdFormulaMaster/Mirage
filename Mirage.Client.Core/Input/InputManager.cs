@@ -5,19 +5,19 @@ using System.Collections.Generic;
 
 namespace Mirage.Client.Core {
     /// <summary>
-    /// 
+    /// Sealed class structure for the InputState
     /// </summary>
     public sealed class InputState {
         private KeyboardState keyboard;
         private MouseState mouse;
 
         /// <summary>
-        /// 
+        /// The Keyboard state
         /// </summary>
         public KeyboardState Keyboard { get { return keyboard; } }
         
         /// <summary>
-        /// 
+        /// The Mouse state
         /// </summary>
         public MouseState Mouse { get { return mouse; } }
 
@@ -41,7 +41,7 @@ namespace Mirage.Client.Core {
     }
 
     /// <summary>
-    /// Enumeration for Mouse Buttons.
+    /// Mouse Button Enumeration
     /// </summary>
     public enum MouseButton {
         Primary,
